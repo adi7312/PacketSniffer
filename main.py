@@ -48,8 +48,15 @@ def main():
                 print(f'{TAB_2} Data:')
                 print(format_lines(DATA_TAB_3, data))
             
+            # UDP
+            elif proto == 17:
+                src_port, dest_port, length = unpack_UDP(data)
+                print(f'{TAB_1} UDP Segment:')
+                print(f'{TAB_2} Source port: {src_port}, Destination port: {dest_port}, Length: {length}')
             
-            
+            else:
+                print(f'{TAB_1} Data: ')
+                print(format_lines(DATA_TAB_2, data))
 
 
 def ethernet_frame(data):
