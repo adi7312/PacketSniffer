@@ -1,5 +1,4 @@
 import socket
-import sys
 import struct
 import textwrap
 
@@ -50,10 +49,11 @@ def main():
             
             # UDP
             elif proto == 17:
-                src_port, dest_port, length = unpack_UDP(data)
+                (src_port, dest_port, length, data) = unpack_UDP(data)
                 print(f'{TAB_1} UDP Segment:')
                 print(f'{TAB_2} Source port: {src_port}, Destination port: {dest_port}, Length: {length}')
             
+            # other
             else:
                 print(f'{TAB_1} Data: ')
                 print(format_lines(DATA_TAB_2, data))
