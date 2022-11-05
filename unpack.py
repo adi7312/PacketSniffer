@@ -1,5 +1,6 @@
 import socket
 import struct
+import textwrap
 
 def ethernet_frame(data):
     """Unpacking ethernet frame
