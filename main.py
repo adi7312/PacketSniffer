@@ -1,6 +1,9 @@
 import socket
 import PySimpleGUI as sg
 from unpack import *
+from datetime import datetime
+
+
 
 TAB_1 = '\t - '
 TAB_2 = '\t\t - '
@@ -13,12 +16,15 @@ DATA_TAB_3 = '\t\t\t '
 DATA_TAB_4 = '\t\t\t\t '
 
 def main():
+    now = datetime.now()
+    current_time = now.strftime("%d/%m/%Y %H:%M:%S:%f")[:-3]
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
 
     
     raw_data, addr = s.recvfrom(65536)
     dest_mac, src_mac, ethernet_protocol, data = ethernet_frame(raw_data)
     print('\nEthernet Frame:')
+    print(current_time)
     print(f'Destnation: {dest_mac}, Source: {src_mac}, Protocol: {ethernet_protocol}')
 
     # 8: IPv4
@@ -64,16 +70,24 @@ def mprint(*args, **kwargs):
 print = mprint
 
 layout = [
-    [sg.Text("Demonstration")],
+    [sg.Text("Click 'Go' to start capturing packets.")],
     [sg.MLine(key='-ML1-'+ sg.WRITE_ONLY_KEY, size=(60,20), reroute_stderr=True, reroute_stdout=True)],
-    [sg.Button('Go'), sg.Button('Exit')]
+    [sg.Button('Go'), sg.Button('Exit'), sg.Button('Clear'), sg.Button('Save to txt file')]
 ]
-window = sg.Window("Just a window", layout, finalize=True)
-counter = 0
+window = sg.Window("Packet analyzer", layout, finalize=True)
+
 while True:
     event, values = window.read(timeout=100)
-    if event == (sg.WINDOW_CLOSED, 'Exit'):
+    if event in (sg.WINDOW_CLOSED, 'Exit'):
         break
     elif event == 'Go':
-        main
+        counter = 10
+        while counter != 0:
+            main()
+            counter -= 1
+    elif event == 'Clear':
+        window['-ML1-'+ sg.WRITE_ONLY_KEY]("")
+    elif event == 'Save to txt file':
+        with open("LogFile.txt", "wt", encoding='UTF-8') as f:
+            f.write(window['-ML1-'+ sg.WRITE_ONLY_KEY].get())
 window.close()
