@@ -1,4 +1,5 @@
 import socket
+import PySimpleGUI as sg
 from unpack import *
 
 TAB_1 = '\t - '
@@ -56,4 +57,22 @@ def main():
             else:
                 print(f'{TAB_1} Data: ')
                 print(format_lines(DATA_TAB_2, data))
+
+def mprint(*args, **kwargs):
+    window['-ML1-'+sg.WRITE_ONLY_KEY].print(*args, **kwargs)
+# GUI definittion # 
+print = mprint
+
+layout = [
+    [sg.Text("Demonstration")],
+    [sg.MLine(key='-ML1-'+ sg.WRITE_ONLY_KEY, size=(60,20), reroute_stderr=True, reroute_stdout=True)],
+    [sg.Button('Go'), sg.Button('Exit')]
+]
+window = sg.Window("Just a window", layout, finalize=True)
 main()
+counter = 0
+while True:
+    event, values = window.read(timeout=100)
+    if event == (sg.WINDOW_CLOSED, 'Exit'):
+        break
+window.close()
