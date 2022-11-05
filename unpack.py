@@ -24,7 +24,7 @@ def get_mac_addr(bytes_of_addr):
     :returns: MAC address in hexadecimal form (ie. AA:BB:CC:DD:EE:FF)
     :rtype: str
     """
-    bytes_str = map('{:02x}'.format(), bytes_of_addr)
+    bytes_str = map('{:02x}'.format, bytes_of_addr)
     mac_addr = ':'.join(bytes_str).upper()
     return mac_addr
 
