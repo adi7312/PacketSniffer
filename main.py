@@ -19,10 +19,17 @@ async def main():
     now = datetime.now()
     current_time = now.strftime("%d/%m/%Y %H:%M:%S:%f")[:-3]
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
+    s.settimeout(10)
 
+    try:
+        raw_data, addr = s.recvfrom(65536)
+        dest_mac, src_mac, ethernet_protocol, data = ethernet_frame(raw_data)
+    except TimeoutError:
+        print("Socket timeout, lunch the program again.")
+        s.close()
+        await asyncio.sleep(2)
+        return None
     
-    raw_data, addr = s.recvfrom(65536)
-    dest_mac, src_mac, ethernet_protocol, data = ethernet_frame(raw_data)
     print('\nEthernet Frame:')
     print(current_time)
     print(f'Destnation: {dest_mac}, Source: {src_mac}, Protocol: {ethernet_protocol}')
@@ -101,10 +108,13 @@ async def GUI():
             while True:
                 task1 = asyncio.create_task(main())
                 task2 = asyncio.create_task(check_button_while_sniffer_runs())
-                r_value = await task2
-                if r_value == 'Pause':
+                r_value1 = await task1
+                r_value2 = await task2
+                if r_value1 == None:
                     break
-                elif r_value:
+                if r_value2 == 'Pause':
+                    break
+                elif r_value2:
                     flag = False
                     break
                 await task1
