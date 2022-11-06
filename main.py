@@ -28,7 +28,7 @@ async def main():
         print("Socket timeout, lunch the program again.")
         s.close()
         await asyncio.sleep(2)
-        return None
+        return 1
     
     print('\nEthernet Frame:')
     print(current_time)
@@ -92,11 +92,11 @@ def mprint(*args, **kwargs):
 print = mprint
 
 layout = [
-    [sg.Text("Click 'Go' to start capturing packets.")],
-    [sg.MLine(key='-ML1-'+ sg.WRITE_ONLY_KEY, size=(60,20), reroute_stderr=True, reroute_stdout=True)],
-    [sg.Button('Go'), sg.Button('Pause'), sg.Button('Exit'), sg.Button('Clear'), sg.Button('Save to txt file')]
+
+    [sg.MLine(key='-ML1-'+ sg.WRITE_ONLY_KEY, size=(120,40), reroute_stderr=True, reroute_stdout=True, background_color="#111111", text_color="#FFFFFF")],
+    [sg.Button('Go'), sg.Button('Pause'), sg.Button('Clear'), sg.Button('Save to txt file'), sg.Button('Exit')]
 ]
-window = sg.Window("Packet analyzer", layout, finalize=True)
+window = sg.Window("Packet analyzer", layout, finalize=True, background_color='#111111')
 
 async def GUI():
     flag = True
@@ -110,7 +110,7 @@ async def GUI():
                 task2 = asyncio.create_task(check_button_while_sniffer_runs())
                 r_value1 = await task1
                 r_value2 = await task2
-                if r_value1 == None:
+                if r_value1 == 1:
                     break
                 if r_value2 == 'Pause':
                     break
