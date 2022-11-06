@@ -2,7 +2,7 @@ import socket
 import PySimpleGUI as sg
 from unpack import *
 from datetime import datetime
-
+import asyncio
 
 
 TAB_1 = '\t - '
@@ -15,7 +15,7 @@ DATA_TAB_2 = '\t\t '
 DATA_TAB_3 = '\t\t\t '
 DATA_TAB_4 = '\t\t\t\t '
 
-def main():
+async def main():
     now = datetime.now()
     current_time = now.strftime("%d/%m/%Y %H:%M:%S:%f")[:-3]
     s = socket.socket(socket.AF_PACKET, socket.SOCK_RAW, socket.ntohs(3))
@@ -64,30 +64,55 @@ def main():
             print(f'{TAB_1} Data: ')
             print(format_lines(DATA_TAB_2, data))
 
+
+async def check_button_while_sniffer_runs():
+    while True:
+        pressed_button = ''
+        event, values = window.read(timeout=100)
+        if event in (sg.WINDOW_CLOSED, 'Exit'):
+            pressed_button = 'Exit'
+        elif event == 'Pause':
+            pressed_button = 'Pause'
+        return pressed_button
+            
+
+
 def mprint(*args, **kwargs):
     window['-ML1-'+sg.WRITE_ONLY_KEY].print(*args, **kwargs)
+
+
 # GUI definittion # 
 print = mprint
 
 layout = [
     [sg.Text("Click 'Go' to start capturing packets.")],
     [sg.MLine(key='-ML1-'+ sg.WRITE_ONLY_KEY, size=(60,20), reroute_stderr=True, reroute_stdout=True)],
-    [sg.Button('Go'), sg.Button('Exit'), sg.Button('Clear'), sg.Button('Save to txt file')]
+    [sg.Button('Go'), sg.Button('Pause'), sg.Button('Exit'), sg.Button('Clear'), sg.Button('Save to txt file')]
 ]
 window = sg.Window("Packet analyzer", layout, finalize=True)
 
-while True:
-    event, values = window.read(timeout=100)
-    if event in (sg.WINDOW_CLOSED, 'Exit'):
-        break
-    elif event == 'Go':
-        counter = 10
-        while counter != 0:
-            main()
-            counter -= 1
-    elif event == 'Clear':
-        window['-ML1-'+ sg.WRITE_ONLY_KEY]("")
-    elif event == 'Save to txt file':
-        with open("LogFile.txt", "wt", encoding='UTF-8') as f:
-            f.write(window['-ML1-'+ sg.WRITE_ONLY_KEY].get())
-window.close()
+async def GUI():
+    flag = True
+    while flag:
+        event, values = window.read(timeout=100)
+        if event in (sg.WINDOW_CLOSED, 'Exit'):
+            break
+        elif event == 'Go':
+            while True:
+                task1 = asyncio.create_task(main())
+                task2 = asyncio.create_task(check_button_while_sniffer_runs())
+                r_value = await task2
+                if r_value == 'Pause':
+                    break
+                elif r_value:
+                    flag = False
+                    break
+                await task1
+        elif event == 'Clear':
+            window['-ML1-'+ sg.WRITE_ONLY_KEY]("")
+        elif event == 'Save to txt file':
+            with open("LogFile.txt", "wt", encoding='UTF-8') as f:
+                f.write(window['-ML1-'+ sg.WRITE_ONLY_KEY].get())
+    window.close()
+
+asyncio.run(GUI())
